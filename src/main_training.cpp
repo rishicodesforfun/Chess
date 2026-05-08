@@ -30,6 +30,9 @@ void training_iteration(int iteration_number) {
 int main() {
     std::cout << "AlphaZero Self-Play Data Generation" << std::endl;
     
+    // Initialize move generation tables
+    Bitboards::init();
+    
     // Run 3 iterations for demonstration
     for (int iter = 1; iter <= 3; iter++) {
         training_iteration(iter);

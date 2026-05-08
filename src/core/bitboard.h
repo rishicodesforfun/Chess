@@ -10,20 +10,27 @@ namespace Bitboards {
 extern void init();
 
 inline int popcount(Bitboard b) {
-#if defined(_MSC_VER)
+#if defined(__clang__) || defined(__GNUC__)
+    return __builtin_popcountll(b);
+#elif defined(_WIN64)
     return static_cast<int>(__popcnt64(b));
 #else
-    return __builtin_popcountll(b);
+    return static_cast<int>(__popcnt(static_cast<unsigned int>(b)) + __popcnt(static_cast<unsigned int>(b >> 32)));
 #endif
 }
 
 inline Square lsb(Bitboard b) {
-#if defined(_MSC_VER)
+#if defined(__clang__) || defined(__GNUC__)
+    return static_cast<Square>(__builtin_ctzll(b));
+#elif defined(_WIN64)
     unsigned long idx;
     _BitScanForward64(&idx, b);
     return static_cast<Square>(idx);
 #else
-    return static_cast<Square>(__builtin_ctzll(b));
+    unsigned long idx;
+    if (_BitScanForward(&idx, static_cast<unsigned long>(b))) return static_cast<Square>(idx);
+    _BitScanForward(&idx, static_cast<unsigned long>(b >> 32));
+    return static_cast<Square>(idx + 32);
 #endif
 }
 

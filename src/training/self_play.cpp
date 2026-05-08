@@ -8,12 +8,14 @@ GameRecord play_self_game(ChessEngine& engine, int search_depth) {
     GameRecord game;
     engine.set_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     
-    while (!engine.is_game_over()) {
+    while (!engine.is_game_over() && game.moves.size() < 200) {
         // Record position FEN
         game.fens.push_back(engine.get_fen());
         
         // Search for best move
         Move best_move = engine.get_best_move(search_depth);
+        if (!best_move.is_ok()) break;
+        
         game.moves.push_back(best_move.data);
         
         // Before MCTS is implemented, use uniform move probabilities

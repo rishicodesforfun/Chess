@@ -1,6 +1,7 @@
 #pragma once
 #include "core/board.h"
 #include "core/search.h"
+#include "mcts/mcts.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -29,6 +30,10 @@ public:
 private:
     BoardState board;
     std::vector<std::unique_ptr<StateInfo>> state_history;
+    
+    // MCTS components
+    std::unique_ptr<MCTS::NeuralNetworkEvaluator> nn_evaluator;
+    std::unique_ptr<MCTS::MCTSEngine> mcts_engine;
     
     // Helper to parse string to Move object
     Move parse_algebraic(const std::string& algebraic);

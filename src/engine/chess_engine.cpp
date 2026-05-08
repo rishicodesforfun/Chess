@@ -4,6 +4,15 @@
 
 ChessEngine::ChessEngine() {
     set_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    
+    try {
+        nn_evaluator = std::make_unique<MCTS::NeuralNetworkEvaluator>("chess_model.onnx");
+        mcts_engine = std::make_unique<MCTS::MCTSEngine>(*nn_evaluator);
+        std::cout << "Success: ONNX model loaded properly!" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Warning: Could not load ONNX model. Falling back to basic search." << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }
 
 void ChessEngine::set_position(const std::string& fen) {
@@ -41,7 +50,12 @@ Move ChessEngine::parse_algebraic(const std::string& algebraic) {
     return Move(); // Invalid move
 }
 
-Move ChessEngine::get_best_move(int depth) {
+Move ChessEngine::get_best_move(int depth_or_simulations) {
+    if (mcts_engine) {
+        return mcts_engine->search(board, depth_or_simulations);
+    }
+    // Fallback: cap depth at 4 to avoid infinite recursion with MCTS simulation counts
+    int depth = std::min(depth_or_simulations, 4);
     return Search::get_best_move(board, depth);
 }
 
