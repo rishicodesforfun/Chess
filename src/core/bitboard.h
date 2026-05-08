@@ -83,4 +83,22 @@ constexpr Bitboard shift(Bitboard b) {
     else return 0;
 }
 
+inline Bitboard shift_one(Bitboard b, Direction d) {
+    switch (d) {
+        case NORTH: return b << 8;
+        case SOUTH: return b >> 8;
+        case EAST:  return (b & ~FileHBB) << 1;
+        case WEST:  return (b & ~FileABB) >> 1;
+        case NORTH_EAST: return (b & ~FileHBB) << 9;
+        case NORTH_WEST: return (b & ~FileABB) << 7;
+        case SOUTH_EAST: return (b & ~FileHBB) >> 7;
+        case SOUTH_WEST: return (b & ~FileABB) >> 9;
+        default: return 0;
+    }
+}
+
+extern Bitboard PawnAttacks[COLOR_NB][SQUARE_NB];
+extern Bitboard KnightAttacks[SQUARE_NB];
+extern Bitboard KingAttacks[SQUARE_NB];
+
 } // namespace Bitboards

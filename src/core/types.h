@@ -59,5 +59,21 @@ enum Direction {
     NORTH_EAST =  9,
     NORTH_WEST =  7,
     SOUTH_EAST = -7,
-    SOUTH_WEST = -9
+    SOUTH_WEST = -9,
+    
+    // Knight moves
+    NORTH_NORTH_EAST = 17,
+    NORTH_NORTH_WEST = 15,
+    SOUTH_SOUTH_EAST = -15,
+    SOUTH_SOUTH_WEST = -17,
+    EAST_EAST_NORTH = 10,
+    EAST_EAST_SOUTH = -6,
+    WEST_WEST_NORTH = 6,
+    WEST_WEST_SOUTH = -10
 };
+
+// Square constants with SQ_ prefix
+#define SQ_A1 A1
+#define SQ_H1 H1
+#define SQ_A8 A8
+#define SQ_H8 H8

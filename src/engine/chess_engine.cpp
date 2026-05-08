@@ -5,13 +5,20 @@
 ChessEngine::ChessEngine() {
     set_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     
-    try {
-        nn_evaluator = std::make_unique<MCTS::NeuralNetworkEvaluator>("chess_model.onnx");
-        mcts_engine = std::make_unique<MCTS::MCTSEngine>(*nn_evaluator);
-        std::cout << "Success: ONNX model loaded properly!" << std::endl;
-    } catch (const std::exception& e) {
-        std::cerr << "Warning: Could not load ONNX model. Falling back to basic search." << std::endl;
-        std::cerr << "Error: " << e.what() << std::endl;
+    std::vector<std::string> paths = {"chess_model.onnx", "python/chess_model.onnx", "../chess_model.onnx"};
+    bool loaded = false;
+    for (const auto& path : paths) {
+        try {
+            nn_evaluator = std::make_unique<MCTS::NeuralNetworkEvaluator>(path);
+            mcts_engine = std::make_unique<MCTS::MCTSEngine>(*nn_evaluator);
+            std::cout << "Success: ONNX model loaded from " << path << "!" << std::endl;
+            loaded = true;
+            break;
+        } catch (...) { continue; }
+    }
+    
+    if (!loaded) {
+        std::cerr << "CRITICAL WARNING: No ONNX model found in any search path. Falling back to basic search." << std::endl;
     }
 }
 

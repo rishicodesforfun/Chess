@@ -58,7 +58,11 @@ void MCTSEngine::expand_node(MCTSNode* node) {
         node->children.push_back(child);
         node->visit_counts.push_back(0);
         node->action_values.push_back(0);
-        child->prior_policy = nn_output.policy[i % 4672]; // Simplified mapping
+        
+        // Correct AlphaZero-style mapping for move policy
+        int encoded = node->moves[i].from() * 64 + node->moves[i].to();
+        float noise = (node->parent == nullptr) ? ((rand() % 100) / 5000.0f) : 0.0f; 
+        child->prior_policy = nn_output.policy[encoded] + noise;
     }
     node->value_estimate = nn_output.value;
 }

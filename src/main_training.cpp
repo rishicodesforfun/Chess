@@ -3,6 +3,8 @@
 #include "training/data_storage.h"
 #include <iostream>
 #include <string>
+#include <ctime>
+#include <cstdlib>
 
 using namespace Training;
 
@@ -14,7 +16,7 @@ void training_iteration(int iteration_number) {
     
     // Play 10 games per iteration for testing (will scale up later)
     for (int i = 0; i < 10; i++) {
-        GameRecord game = play_self_game(engine, 4); // depth 4
+        GameRecord game = play_self_game(engine, 400); // Use 400 simulations for MCTS
         games.push_back(game);
         std::cout << "Game " << i << " outcome: " << game.outcome << " (moves: " << game.moves.size() << ")" << std::endl;
     }
@@ -29,6 +31,9 @@ void training_iteration(int iteration_number) {
 
 int main() {
     std::cout << "AlphaZero Self-Play Data Generation" << std::endl;
+    
+    // Seed random number generator
+    srand(time(nullptr));
     
     // Initialize move generation tables
     Bitboards::init();

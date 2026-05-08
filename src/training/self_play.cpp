@@ -16,7 +16,9 @@ GameRecord play_self_game(ChessEngine& engine, int search_depth) {
         Move best_move = engine.get_best_move(search_depth);
         if (!best_move.is_ok()) break;
         
-        game.moves.push_back(best_move.data);
+        // Encode move as from * 64 + to for neural network training
+        int encoded_move = best_move.from() * 64 + best_move.to();
+        game.moves.push_back(encoded_move);
         
         // Before MCTS is implemented, use uniform move probabilities
         std::vector<Move> legal = MoveGen::generate_legal_moves(engine.get_board_state());

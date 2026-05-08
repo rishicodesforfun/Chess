@@ -4,6 +4,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from dataset import ChessGameDataset
 from model import ChessNet
+from export_onnx import export_to_onnx
 
 class ChessTrainer:
     def __init__(self, model, device='cuda'):
@@ -61,7 +62,7 @@ def main():
     trainer = ChessTrainer(model, device=device)
     
     # Load data from the root folder where C++ will generate JSONL files
-    dataset = ChessGameDataset("../games_iteration_*.jsonl")
+    dataset = ChessGameDataset("games_iteration_*.jsonl")
     if len(dataset) == 0:
         print("No training data found! Run the C++ Phase 2 self-play generation first.")
         return
@@ -71,6 +72,9 @@ def main():
     
     trainer.train_epoch(dataloader, epochs=5)
     trainer.save_model("chess_model_v1.pt")
+    
+    print("Exporting newly trained model for the C++ engine...")
+    export_to_onnx("chess_model_v1.pt", "chess_model.onnx")
 
 if __name__ == "__main__":
     main()
