@@ -72,6 +72,15 @@ enum Direction {
     WEST_WEST_SOUTH = -10
 };
 
+namespace Zobrist {
+    extern uint64_t piece[COLOR_NB][PIECE_TYPE_NB][SQUARE_NB];
+    extern uint64_t castling[16];
+    extern uint64_t en_passant[8];
+    extern uint64_t side_to_move;
+
+    void init();
+}
+
 // Square constants with SQ_ prefix
 #define SQ_A1 A1
 #define SQ_H1 H1

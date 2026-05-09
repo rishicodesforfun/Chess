@@ -13,14 +13,33 @@ enum CastlingRight {
     ALL_CASTLING= 15
 };
 
-// Flags for Move
+// Flags for Move (4 bits)
 enum MoveFlags {
-    NORMAL = 0,
-    PROMOTION = 1, // bit 1 indicates promotion
-    EN_PASSANT = 2,
-    CASTLING = 3,
-    CAPTURE = 4    // bit 3 indicates capture
+    QUIET = 0,
+    DOUBLE_PUSH = 1,
+    OO = 2,
+    OOO = 3,
+    EN_PASSANT = 5,
+    PR_KNIGHT = 8,
+    PR_BISHOP = 9,
+    PR_ROOK = 10,
+    PR_QUEEN = 11,
+    CAPTURE = 4,
+    PC_KNIGHT = 12,
+    PC_BISHOP = 13,
+    PC_ROOK = 14,
+    PC_QUEEN = 15
 };
+
+inline bool is_promotion(int flags) { return (flags & 8) != 0; }
+inline bool is_capture(int flags) { return (flags & 4) != 0; }
+inline PieceType promotion_type(int flags) {
+    return static_cast<PieceType>((flags & 3) + 1); // KNIGHT=1, BISHOP=2, ROOK=3, QUEEN=4
+}
+
+// AlphaZero move encoding (4672 total moves)
+int encode_move(Move m);
+Move decode_move(int encoded, const BoardState& board);
 
 struct Move {
     uint16_t data;
@@ -42,17 +61,22 @@ struct Move {
 };
 
 struct StateInfo {
+    Bitboard piece_bb[COLOR_NB][PIECE_TYPE_NB];
+    Bitboard color_bb[COLOR_NB];
     Piece captured_piece;
     int castling_rights;
     Square ep_square;
     int halfmove_clock;
     uint64_t zobrist_key; // For repetition tracking
+    Move last_move;
     StateInfo* previous;
 };
 
 class BoardState {
 public:
     BoardState();
+    BoardState(const BoardState& other);
+    BoardState& operator=(const BoardState& other);
 
     void set_fen(const std::string& fen);
     std::string get_fen() const;
@@ -68,6 +92,7 @@ public:
     int castling_rights() const { return st->castling_rights; }
     int halfmove_clock() const { return st->halfmove_clock; }
     int fullmove_number() const { return fullmove; }
+    const StateInfo* get_state_info() const { return st; }
 
     void do_move(Move m, StateInfo& new_st);
     void undo_move(Move m);

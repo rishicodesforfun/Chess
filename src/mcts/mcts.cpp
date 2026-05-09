@@ -51,16 +51,17 @@ void MCTSEngine::expand_node(MCTSNode* node) {
     NetworkOutput nn_output = nn_evaluator.evaluate(node->state);
     for (size_t i = 0; i < node->moves.size(); i++) {
         MCTSNode* child = new MCTSNode(node->state);
-        StateInfo st;
+        StateInfo st; // Now safe because BoardState(const BoardState&) clears history
         child->state.do_move(node->moves[i], st);
         child->parent = node;
+        child->parent_child_idx = (int)i;
         
         node->children.push_back(child);
         node->visit_counts.push_back(0);
         node->action_values.push_back(0);
         
         // Correct AlphaZero-style mapping for move policy
-        int encoded = node->moves[i].from() * 64 + node->moves[i].to();
+        int encoded = encode_move(node->moves[i]);
         float noise = (node->parent == nullptr) ? ((rand() % 100) / 5000.0f) : 0.0f; 
         child->prior_policy = nn_output.policy[encoded] + noise;
     }
@@ -79,14 +80,9 @@ float MCTSEngine::evaluate_leaf(MCTSNode* node) {
 void MCTSEngine::backpropagate(MCTSNode* node, float value) {
     while (node != nullptr) {
         node->visits++;
-        if (node->parent != nullptr) {
-            for (size_t i = 0; i < node->parent->children.size(); i++) {
-                if (node->parent->children[i] == node) {
-                    node->parent->visit_counts[i]++;
-                    node->parent->action_values[i] += value;
-                    break;
-                }
-            }
+        if (node->parent != nullptr && node->parent_child_idx != -1) {
+            node->parent->visit_counts[node->parent_child_idx]++;
+            node->parent->action_values[node->parent_child_idx] += value;
         }
         node = node->parent;
         value = -value; // Flip value for opposing side

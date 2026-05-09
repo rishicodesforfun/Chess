@@ -9,6 +9,7 @@ namespace MCTS {
 struct MCTSNode {
     BoardState state;
     MCTSNode* parent;
+    int parent_child_idx; // Index in parent->children
     std::vector<MCTSNode*> children;
     std::vector<Move> moves;
     
@@ -21,7 +22,7 @@ struct MCTSNode {
     int visits;
     
     MCTSNode(const BoardState& s) 
-        : state(s), parent(nullptr), visits(0), is_terminal(false), prior_policy(1.0f), value_estimate(0.0f) {}
+        : state(s), parent(nullptr), parent_child_idx(-1), visits(0), is_terminal(false), prior_policy(1.0f), value_estimate(0.0f) {}
     
     ~MCTSNode() {
         for (auto child : children) {

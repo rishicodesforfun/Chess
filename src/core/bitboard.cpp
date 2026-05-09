@@ -7,6 +7,7 @@ Bitboard KnightAttacks[SQUARE_NB];
 Bitboard KingAttacks[SQUARE_NB];
 
 void init() {
+    Zobrist::init();
     for (int s = 0; s < SQUARE_NB; ++s) {
         Bitboard b = 1ULL << s;
         

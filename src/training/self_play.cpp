@@ -16,8 +16,8 @@ GameRecord play_self_game(ChessEngine& engine, int search_depth) {
         Move best_move = engine.get_best_move(search_depth);
         if (!best_move.is_ok()) break;
         
-        // Encode move as from * 64 + to for neural network training
-        int encoded_move = best_move.from() * 64 + best_move.to();
+        // Encode move using AlphaZero-style mapping (4672 moves)
+        int encoded_move = encode_move(best_move);
         game.moves.push_back(encoded_move);
         
         // Before MCTS is implemented, use uniform move probabilities

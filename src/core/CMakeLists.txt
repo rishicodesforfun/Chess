@@ -3,6 +3,7 @@ add_library(core STATIC
     board.cpp
     movegen.cpp
     search.cpp
+    zobrist.cpp
 )
 
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

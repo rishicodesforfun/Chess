@@ -40,8 +40,14 @@ std::string ChessEngine::to_algebraic(Move m) {
     res += ('a' + file_of(m.to()));
     res += ('1' + rank_of(m.to()));
     
-    if (m.flags() == PROMOTION) {
-        res += "q"; // Simplified: always promote to queen in notation for now
+    if (is_promotion(m.flags())) {
+        switch (promotion_type(m.flags())) {
+            case KNIGHT: res += "n"; break;
+            case BISHOP: res += "b"; break;
+            case ROOK:   res += "r"; break;
+            case QUEEN:  res += "q"; break;
+            default:     res += "q"; break;
+        }
     }
     return res;
 }

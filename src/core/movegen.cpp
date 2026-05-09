@@ -81,13 +81,16 @@ std::vector<Move> generate_pseudo_legal_moves(const BoardState& board) {
         Bitboard single_push = (us == WHITE ? b << 8 : b >> 8) & empty;
         if (single_push) {
             Square to = Bitboards::lsb(single_push);
-            if ((us == WHITE && to >= SQ_A8) || (us == BLACK && to <= SQ_H1)) {
-                moves.emplace_back(from, to, PROMOTION);
+            if ((us == WHITE && rank_of(to) == 7) || (us == BLACK && rank_of(to) == 0)) {
+                moves.emplace_back(from, to, PR_QUEEN);
+                moves.emplace_back(from, to, PR_ROOK);
+                moves.emplace_back(from, to, PR_BISHOP);
+                moves.emplace_back(from, to, PR_KNIGHT);
             } else {
-                moves.emplace_back(from, to, NORMAL);
+                moves.emplace_back(from, to, QUIET);
                 // Double push
                 Bitboard double_push = (us == WHITE ? single_push << 8 : single_push >> 8) & empty & (us == WHITE ? Bitboards::Rank4BB : Bitboards::Rank5BB);
-                if (double_push) moves.emplace_back(from, Bitboards::lsb(double_push), NORMAL);
+                if (double_push) moves.emplace_back(from, Bitboards::lsb(double_push), DOUBLE_PUSH);
             }
         }
         
@@ -95,8 +98,22 @@ std::vector<Move> generate_pseudo_legal_moves(const BoardState& board) {
         Bitboard attacks = Bitboards::PawnAttacks[us][from] & board.pieces(them);
         while (attacks) {
             Square to = Bitboards::lsb(Bitboards::pop_lsb(attacks));
-            if ((us == WHITE && to >= SQ_A8) || (us == BLACK && to <= SQ_H1)) moves.emplace_back(from, to, PROMOTION | CAPTURE);
-            else moves.emplace_back(from, to, CAPTURE);
+            if ((us == WHITE && rank_of(to) == 7) || (us == BLACK && rank_of(to) == 0)) {
+                moves.emplace_back(from, to, PC_QUEEN);
+                moves.emplace_back(from, to, PC_ROOK);
+                moves.emplace_back(from, to, PC_BISHOP);
+                moves.emplace_back(from, to, PC_KNIGHT);
+            } else {
+                moves.emplace_back(from, to, CAPTURE);
+            }
+        }
+
+        // En Passant
+        if (board.en_passant() != NO_SQUARE) {
+            Bitboard ep_attacks = Bitboards::PawnAttacks[us][from] & (1ULL << board.en_passant());
+            if (ep_attacks) {
+                moves.emplace_back(from, board.en_passant(), EN_PASSANT);
+            }
         }
     }
 
@@ -108,12 +125,33 @@ std::vector<Move> generate_pseudo_legal_moves(const BoardState& board) {
             Bitboard attacks = table[from] & targets;
             while (attacks) {
                 Square to = Bitboards::lsb(Bitboards::pop_lsb(attacks));
-                moves.emplace_back(from, to, (Bitboards::test_bit(board.pieces(them), to) ? CAPTURE : NORMAL));
+                moves.emplace_back(from, to, (Bitboards::test_bit(board.pieces(them), to) ? CAPTURE : QUIET));
             }
         }
     };
     gen_fixed(KNIGHT, Bitboards::KnightAttacks);
     gen_fixed(KING, Bitboards::KingAttacks);
+
+    // Castling
+    if (us == WHITE) {
+        if ((board.castling_rights() & WHITE_OO) && !(occupied & (1ULL << F1 | 1ULL << G1))) {
+            if (!is_attacked(board, E1, BLACK) && !is_attacked(board, F1, BLACK))
+                moves.emplace_back(E1, G1, OO);
+        }
+        if ((board.castling_rights() & WHITE_OOO) && !(occupied & (1ULL << D1 | 1ULL << C1 | 1ULL << B1))) {
+            if (!is_attacked(board, E1, BLACK) && !is_attacked(board, D1, BLACK))
+                moves.emplace_back(E1, C1, OOO);
+        }
+    } else {
+        if ((board.castling_rights() & BLACK_OO) && !(occupied & (1ULL << F8 | 1ULL << G8))) {
+            if (!is_attacked(board, E8, WHITE) && !is_attacked(board, F8, WHITE))
+                moves.emplace_back(E8, G8, OO);
+        }
+        if ((board.castling_rights() & BLACK_OOO) && !(occupied & (1ULL << D8 | 1ULL << C8 | 1ULL << B8))) {
+            if (!is_attacked(board, E8, WHITE) && !is_attacked(board, D8, WHITE))
+                moves.emplace_back(E8, C8, OOO);
+        }
+    }
 
     // Sliding pieces
     auto gen_sliding = [&](PieceType pt) {
@@ -123,7 +161,7 @@ std::vector<Move> generate_pseudo_legal_moves(const BoardState& board) {
             Bitboard attacks = get_sliding_attacks(from, occupied, pt) & targets;
             while (attacks) {
                 Square to = Bitboards::lsb(Bitboards::pop_lsb(attacks));
-                moves.emplace_back(from, to, (Bitboards::test_bit(board.pieces(them), to) ? CAPTURE : NORMAL));
+                moves.emplace_back(from, to, (Bitboards::test_bit(board.pieces(them), to) ? CAPTURE : QUIET));
             }
         }
     };

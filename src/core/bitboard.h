@@ -80,6 +80,14 @@ constexpr Bitboard shift(Bitboard b) {
     else if constexpr (D == NORTH_WEST) return (b & ~FileABB) << 7;
     else if constexpr (D == SOUTH_EAST) return (b & ~FileHBB) >> 7;
     else if constexpr (D == SOUTH_WEST) return (b & ~FileABB) >> 9;
+    else if constexpr (D == NORTH_NORTH_EAST) return (b & ~FileHBB) << 17;
+    else if constexpr (D == NORTH_NORTH_WEST) return (b & ~FileABB) << 15;
+    else if constexpr (D == SOUTH_SOUTH_EAST) return (b & ~FileHBB) >> 15;
+    else if constexpr (D == SOUTH_SOUTH_WEST) return (b & ~FileABB) >> 17;
+    else if constexpr (D == EAST_EAST_NORTH) return (b & ~(FileGBB | FileHBB)) << 10;
+    else if constexpr (D == EAST_EAST_SOUTH) return (b & ~(FileGBB | FileHBB)) >> 6;
+    else if constexpr (D == WEST_WEST_NORTH) return (b & ~(FileABB | FileBBB)) << 6;
+    else if constexpr (D == WEST_WEST_SOUTH) return (b & ~(FileABB | FileBBB)) >> 10;
     else return 0;
 }
 
