@@ -1,6 +1,0 @@
-build/
-__pycache__/
-*.onnx
-*.onnx.data
-*.jsonl
-*.pt
